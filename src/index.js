@@ -6,10 +6,8 @@ dotenv.config();
 
 try {
   await initMongoConnection();
-  console.log('MongoDB connected successfully');
-  
   await setupServer();
-} catch (error) {
-  console.error('Failed to start application:', error);
+} catch (err) {
+  console.error('App failed to start:', err);
   process.exit(1);
 }

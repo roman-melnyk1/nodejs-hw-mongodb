@@ -1,79 +1,23 @@
 import express from 'express';
-import pinoHttp from 'pino-http';
-import pino from 'pino';
 import cors from 'cors';
-import { contactService } from './services/contacts.js';
-
-const PORT = Number(process.env.PORT || 3000);
-
-const logger = pino({
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      translateTime: 'SYS:standard',
-    },
-  },
-});
+import morgan from 'morgan';
+import { contactRouter } from './routers/contacts.js';
+import { errorHandler } from './middlewares/errorHandler.js';
+import { notFoundHandler } from './middlewares/notFoundHandler.js';
 
 export const setupServer = () => {
   const app = express();
 
-  app.use(express.json());
   app.use(cors());
-  app.use(pinoHttp({ logger }));
+  app.use(morgan('dev'));
+  app.use(express.json());
 
-  app.get('/', (req, res, next) => {
-    try {
-      res.json({
-        message: 'Server is running! Check the /contacts endpoint',
-        status: 200,
-      });
-    } catch (error) {
-      next(error);
-    }
-  });
+  app.use('/contacts', contactRouter);
 
-  app.get('/contacts', async (req, res, next) => {
-    try {
-      const contacts = await contactService.getAllContacts();
-      res.json(contacts);
-    } catch (error) {
-      next(error);
-    }
-  });
+  app.use(notFoundHandler);
+  app.use(errorHandler);
 
-  app.get('/contacts/:contactId', async (req, res, next) => {
-    try {
-      const { contactId } = req.params;
-      const contact = await contactService.getContactById(contactId);
-
-      if (!contact) {
-        return res.status(404).json({ status: 404, message: 'Contact not found' });
-      }
-      res.json(contact);
-    } catch (error) {
-      next(error);
-    }
-  });
-
-  app.use( (req, res) => {
-    res.status(404).json({
-      status: 404,
-      message: 'Route not found',
-    });
-  });
-  
-  app.use((error, req, res, next) => {
-    req.log.error(error);
-    res.status(500).json({
-      status: 500,
-      message: 'Internal server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong',
-    });
-  });
-
-  app.listen(PORT, () => {
-    console.log(` Server is running on port ${PORT}`);
+  app.listen(process.env.PORT || 3000, () => {
+    console.log(`🚀 Server running on port ${process.env.PORT || 3000}`);
   });
 };
