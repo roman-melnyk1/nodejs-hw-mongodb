@@ -2,7 +2,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import dotenv from 'dotenv';
 import { initMongoConnection } from '../db/initMongoConnection.js';
-import { ContactsCollection } from '../Models/Contact.js';
+import { Contact } from '../db/models/contacts.js';
 
 dotenv.config();
 
@@ -17,13 +17,13 @@ async function importContacts() {
 
     console.log(`Found ${contacts.length} contacts to import`);
 
-    await ContactsCollection.deleteMany({});
+    await Contact.deleteMany({});
     console.log('Cleared existing contacts');
 
-    const result = await ContactsCollection.insertMany(contacts);
+    const result = await Contact.insertMany(contacts);
     console.log(`Successfully imported ${result.length} contacts`);
 
-    const totalContacts = await ContactsCollection.countDocuments();
+    const totalContacts = await Contact.countDocuments();
     console.log(`Total contacts in database: ${totalContacts}`);
 
     process.exit(0);
