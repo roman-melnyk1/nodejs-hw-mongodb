@@ -6,7 +6,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.js",
+    "import-contacts": "node src/scripts/importContacts.js",
     "start": "node src/index.js"
+    
   },
   "keywords": [],
   "author": "",
